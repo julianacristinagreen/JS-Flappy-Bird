@@ -19,6 +19,14 @@ scrn.addEventListener("click", () => {
       UI.score.curr = 0;
       SFX.played = false;
       break;
+    case state.win:
+      state.curr = state.getReady;
+      bird.speed = 0;
+      bird.y = 100;
+      pipe.pipes = [];
+      UI.score.curr = 0;
+      SFX.played = false;
+      break;
   }
 });
 
@@ -41,6 +49,14 @@ scrn.onkeydown = function keyDown(e) {
         UI.score.curr = 0;
         SFX.played = false;
         break;
+      case state.gameOver:
+        state.curr = state.getReady;
+        bird.speed = 0;
+        bird.y = 100;
+        pipe.pipes = [];
+        UI.score.curr = 0;
+        SFX.played = false;
+        break;
     }
   }
 };
@@ -52,6 +68,7 @@ const state = {
   getReady: 0,
   Play: 1,
   gameOver: 2,
+  win:3,
 };
 const SFX = {
   start: new Audio(),
@@ -176,6 +193,22 @@ const bird = {
           }
         }
 
+      case state.win:
+        this.frame = 1;
+        if (this.y + r < gnd.y) {
+          this.y += this.speed;
+          this.setRotation();
+          this.speed += this.gravity * 2;
+        } else {
+          this.speed = 0;
+          this.y = gnd.y - r;
+          this.rotatation = 90;
+          if (!SFX.played) {
+            SFX.die.play();
+            SFX.played = true;
+          }
+        }
+
         break;
     }
     this.frame = this.frame % this.animations.length;
@@ -211,14 +244,25 @@ const bird = {
       } else if (pipe.moved) {
         UI.score.curr++;
         SFX.score.play();
+        if (UI.score.curr >= 3){
+          state.curr = state.win;
+          this.flap();
+          this.flap();
+        }
         pipe.moved = false;
       }
     }
   },
 };
+
+function sleep(time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
+
 const UI = {
   getReady: { sprite: new Image() },
   gameOver: { sprite: new Image() },
+  win: { sprite: new Image() },
   tap: [{ sprite: new Image() }, { sprite: new Image() }],
   score: {
     curr: 0,
@@ -247,6 +291,15 @@ const UI = {
         this.ty =
           this.y + this.gameOver.sprite.height - this.tap[0].sprite.height;
         sctx.drawImage(this.gameOver.sprite, this.x, this.y);
+        sctx.drawImage(this.tap[this.frame].sprite, this.tx, this.ty);
+        break;
+      case state.win:
+        this.y = parseFloat(scrn.height - this.win.sprite.height)/3;
+        this.x = parseFloat(scrn.width - this.win.sprite.width)/2;
+        this.tx = parseFloat(scrn.width - this.tap[0].sprite.width)/2;
+        this.ty =
+          (this.y + this.win.sprite.height - this.tap[0].sprite.height)*1.75;
+        sctx.drawImage(this.win.sprite, this.x, this.y);
         sctx.drawImage(this.tap[this.frame].sprite, this.tx, this.ty);
         break;
     }
@@ -283,6 +336,27 @@ const UI = {
         }
 
         break;
+      case state.win:
+        sctx.lineWidth = "2";
+        sctx.font = "40px Squada One";
+        let sc1 = `SCORE :     ${this.score.curr}`;
+        try {
+          this.score.best = Math.max(
+            this.score.curr,
+            localStorage.getItem("best")
+          );
+          localStorage.setItem("best", this.score.best);
+          let bs = `BEST  :     ${this.score.best}`;
+          sctx.fillText(sc1, scrn.width / 2 - 80, scrn.height / 2 + 0);
+          sctx.strokeText(sc1, scrn.width / 2 - 80, scrn.height / 2 + 0);
+          sctx.fillText(bs, scrn.width / 2 - 80, scrn.height / 2 + 30);
+          sctx.strokeText(bs, scrn.width / 2 - 80, scrn.height / 2 + 30);
+        } catch (e) {
+          sctx.fillText(sc, scrn.width / 2 - 85, scrn.height / 2 + 15);
+          sctx.strokeText(sc, scrn.width / 2 - 85, scrn.height / 2 + 15);
+        }
+
+        break;
     }
   },
   update: function () {
@@ -293,16 +367,17 @@ const UI = {
 };
 
 gnd.sprite.src = "img/ground.png";
-bg.sprite.src = "img/BG.png";
+bg.sprite.src = "img/BG.jpg";
 pipe.top.sprite.src = "img/toppipe.png";
 pipe.bot.sprite.src = "img/botpipe.png";
 UI.gameOver.sprite.src = "img/go.png";
+UI.win.sprite.src = "img/win.png";
 UI.getReady.sprite.src = "img/getready.png";
 UI.tap[0].sprite.src = "img/tap/t0.png";
 UI.tap[1].sprite.src = "img/tap/t1.png";
 bird.animations[0].sprite.src = "img/bird/b0.png";
-bird.animations[1].sprite.src = "img/bird/b1.png";
-bird.animations[2].sprite.src = "img/bird/b2.png";
+bird.animations[1].sprite.src = "img/bird/b0.png";
+bird.animations[2].sprite.src = "img/bird/b0.png";
 bird.animations[3].sprite.src = "img/bird/b0.png";
 SFX.start.src = "sfx/start.wav";
 SFX.flap.src = "sfx/flap.wav";
