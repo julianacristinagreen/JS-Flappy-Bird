@@ -1,15 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>FlappyBird</title>
-    <link rel="stylesheet" href="style.css" > 
-    <link href="https://fonts.googleapis.com/css?family=Squada+One&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Popup Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-    <canvas id="canvas" width="276" height="414"></canvas>
-    <script src="game.js"></script>
+  <h1>Flappy Bird Game Popup</h1>
+  <button id="openPopup">Open Game</button>
+
+  <script>
+    // Function to open a popup window and load the game
+    document.getElementById('openPopup').addEventListener('click', function() {
+      const popupWindow = window.open('', 'GamePopup', 'width=325,height=1000,scrollbars=no');
+
+      // Write the HTML structure inside the popup with proper template literal
+      popupWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Flappy Bird Game</title>
+        </head>
+        <body>
+          <canvas id="canvas" width="300" height="500"></canvas>
+          <script src="game.js"><\/script>
+        </\body>
+        </\html>
+      `);
+
+      // Close the document after writing to ensure it renders correctly
+      popupWindow.document.close();
+    });
+  </script>
 </body>
 </html>
+
